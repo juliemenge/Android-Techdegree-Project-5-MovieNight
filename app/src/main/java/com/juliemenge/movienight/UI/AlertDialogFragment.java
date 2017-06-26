@@ -18,6 +18,5 @@ public class AlertDialogFragment extends DialogFragment {
 
         AlertDialog dialog = builder.create(); //actually create the alert dialog
         return dialog;
-        // non-change
     }
 }

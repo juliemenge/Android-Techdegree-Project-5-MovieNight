@@ -1,11 +1,13 @@
 package com.juliemenge.movienight.UI;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.juliemenge.movienight.Data.Movie;
@@ -17,6 +19,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -27,12 +31,16 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName(); //TAG for logging errors
 
+    public static final String MOVIE_RESULTS = "MOVIE RESULTS"; //used for intent
+
     private Movie[] mMovie; //creating a variable to store movie results - call it on onResponse when response is successful
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ButterKnife.bind(this); //make butterknife do its thing
 
         //variables to hold data about the api
         String apiKey = "313b7986e3fac321ab33d6d3546ac8ab";
@@ -132,5 +140,13 @@ public class MainActivity extends AppCompatActivity {
     private void alertUserAboutError() {
         AlertDialogFragment dialog = new AlertDialogFragment();
         dialog.show(getFragmentManager(), "error_dialog");
+    }
+
+    @OnClick(R.id.submitButton)
+    public void startResultsActivity(View view) {
+        //write intent to start results activity when you click on the button
+        Intent intent = new Intent(this, ResultsActivity.class);
+        intent.putExtra(MOVIE_RESULTS, "cat"); //not sure about this part - add run on UI thread stuff
+        startActivity(intent);
     }
 }

@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.juliemenge.movienight.Data.Movie;
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import okhttp3.Call;
@@ -34,6 +36,12 @@ public class MainActivity extends AppCompatActivity {
     public static final String MOVIE_RESULTS = "MOVIE RESULTS"; //used for intent
 
     private Movie[] mMovie; //creating a variable to store movie results - call it on onResponse when response is successful
+
+    //use butterknife to declare all UI variables
+    //@BindView(R.id.votesEntry) EditText mVotesEntry;
+    //@BindView(R.id.ratingEntry) EditText mRatingEntry;
+    //@BindView(R.id.startDateEntry) EditText mStartDateEntry;
+    //@BindView(R.id.endDateEntry) EditText mEndDateEntry;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,24 +69,46 @@ public class MainActivity extends AppCompatActivity {
         if(isNetworkAvailable()) {
 
             OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder().url(movieUrl).build();
+            Request request = new Request.Builder()
+                    .url(movieUrl)
+                    .build();
 
             Call call = client.newCall(request);
+
             call.enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     //what to do when there is no response
+                    runOnUiThread(new Runnable() { //added this - make sure it works
+                        @Override
+                        public void run() {
+
+                        }
+                    });
+                    alertUserAboutError(); //if no response, let the user know
                 }
 
                 @Override
                 //what to do when you receive a response back
                 public void onResponse(Call call, Response response) throws IOException {
                     //do this when there is a successful response
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                        }
+                    }); //added this, make sure it works
                     try {
                         String jsonData = response.body().string(); //string to store all the json data
                         Log.v(TAG, jsonData); //Logging all the JSON data
                         if (response.isSuccessful()) {
-                            mMovie = getMovieResults(jsonData);
+                            mMovie = getMovieResults(jsonData); //pass the JSON data into the method that creates our movie model
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateDisplay();
+                                }
+                            }); //do I have to have an update display method?
                         } else { //if you receive a response and it was NOT successful
                             //let user know there was an error
                             alertUserAboutError();
@@ -93,6 +123,10 @@ public class MainActivity extends AppCompatActivity {
         } else { //if the network is NOT available, let the user know
             Toast.makeText(this, "Network unavailable!", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void updateDisplay() {
+        Log.v(TAG, "UI is running");
     }
 
     //method to create a movie using json data from the api
@@ -146,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
     public void startResultsActivity(View view) {
         //write intent to start results activity when you click on the button
         Intent intent = new Intent(this, ResultsActivity.class);
-        intent.putExtra(MOVIE_RESULTS, "cat"); //not sure about this part - add run on UI thread stuff
+        intent.putExtra(MOVIE_RESULTS, mMovie); //not sure about this part - add run on UI thread stuff
         startActivity(intent);
     }
 }

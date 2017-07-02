@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -35,13 +36,16 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String MOVIE_RESULTS = "MOVIE RESULTS"; //used for intent
 
+    String apiKey = "313b7986e3fac321ab33d6d3546ac8ab"; //my unique api key
+
     private Movie[] mMovie; //creating a variable to store movie results - call it on onResponse when response is successful
 
     //use butterknife to declare all UI variables
-    //@BindView(R.id.votesEntry) EditText mVotesEntry;
-    //@BindView(R.id.ratingEntry) EditText mRatingEntry;
-    //@BindView(R.id.startDateEntry) EditText mStartDateEntry;
-    //@BindView(R.id.endDateEntry) EditText mEndDateEntry;
+    @BindView(R.id.votesEntry) EditText mVotesEntry;
+    @BindView(R.id.ratingEntry) EditText mRatingEntry;
+    @BindView(R.id.startDateEntry) EditText mStartDateEntry;
+    @BindView(R.id.endDateEntry) EditText mEndDateEntry;
+    @BindView(R.id.submitButton) Button mSubmitButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,81 +54,84 @@ public class MainActivity extends AppCompatActivity {
 
         ButterKnife.bind(this); //make butterknife do its thing
 
-        //variables to hold data about the api
-        String apiKey = "313b7986e3fac321ab33d6d3546ac8ab";
-        double voteAverage = 7.5;
-        int voteCount = 1000;
-        String primaryReleaseDateStart = "2014-01-01";
-        String primaryReleaseDateEnd = "2015-06-30";
+        //when the button is clicked, do the api request and return the results in a new activity
+        mSubmitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //set what the user entered to variables used to build the api url
+                String ratingAverage = mRatingEntry.getText().toString().trim();
+                String votesCount = mVotesEntry.getText().toString().trim();
+                String startDate = mStartDateEntry.getText().toString().trim();
+                String endDate = mEndDateEntry.getText().toString().trim();
 
-        //building the api url
-        String movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + apiKey +
-                "&language=en-US&sort_by=popularity.desc&include_adult=false" +
-                "&include_video=false&page=1&vote_average.gte=" + voteAverage +
-                "&vote_count.gte=" + voteCount + "&primary_release_date.gte=" + primaryReleaseDateStart +
-                "&primary_release_date.lte=" + primaryReleaseDateEnd;
+                //build the api url
+                String movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + apiKey +
+                        "&language=en-US&sort_by=popularity.desc&include_adult=false" +
+                        "&include_video=false&page=1&vote_average.gte=" + ratingAverage +
+                        "&vote_count.gte=" + votesCount + "&primary_release_date.gte=" + startDate +
+                        "&primary_release_date.lte=" + endDate;
 
-        //asynchronous get recipe from OkHTTP to make the API get the data
-        //first, check that the network is available
-        if(isNetworkAvailable()) {
+                //asynchronous get recipe from OkHTTP to make the API get the data
+                //first, check that the network is available
+                if(isNetworkAvailable()) {
 
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(movieUrl)
-                    .build();
+                    OkHttpClient client = new OkHttpClient();
+                    Request request = new Request.Builder()
+                            .url(movieUrl)
+                            .build();
 
-            Call call = client.newCall(request);
+                    Call call = client.newCall(request);
 
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    //what to do when there is no response
-                    runOnUiThread(new Runnable() { //added this - make sure it works
+                    call.enqueue(new Callback() {
                         @Override
-                        public void run() {
-
-                        }
-                    });
-                    alertUserAboutError(); //if no response, let the user know
-                }
-
-                @Override
-                //what to do when you receive a response back
-                public void onResponse(Call call, Response response) throws IOException {
-                    //do this when there is a successful response
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                        }
-                    }); //added this, make sure it works
-                    try {
-                        String jsonData = response.body().string(); //string to store all the json data
-                        Log.v(TAG, jsonData); //Logging all the JSON data
-                        if (response.isSuccessful()) {
-                            mMovie = getMovieResults(jsonData); //pass the JSON data into the method that creates our movie model
+                        public void onFailure(Call call, IOException e) {
+                            //what to do when there is no response
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    updateDisplay();
+
                                 }
-                            }); //do I have to have an update display method?
-                        } else { //if you receive a response and it was NOT successful
-                            //let user know there was an error
-                            alertUserAboutError();
+                            });
+                            alertUserAboutError(); //if no response, let the user know
                         }
-                    } catch (IOException e) {
-                        Log.e(TAG, "Exception caught:", e);
-                    } catch (JSONException e) {
-                        Log.e(TAG, "Exception caught: ", e);
-                    }
+
+                        @Override
+                        //what to do when you receive a response back
+                        public void onResponse(Call call, Response response) throws IOException {
+                            try {
+                                final String jsonData = response.body().string(); //string to store all the json data
+                                if (response.isSuccessful()) { //if you receive a response and it is successful
+                                    mMovie = getMovieResults(jsonData); //pass the json data into the method that creates the movies model
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            updateDisplay(); //need to check if i need this for refreshing?
+
+                                            //start the intent to display the new data
+                                            Intent intent = new Intent(MainActivity.this, ResultsActivity.class);
+                                            intent.putExtra(MOVIE_RESULTS, mMovie);
+                                            startActivity(intent);
+                                        }
+                                    });
+                                } else { //if you receive a response and it is NOT successful
+                                    alertUserAboutError(); //let user know there was an error
+                                }
+                            } catch (IOException e) {
+                                Log.e(TAG, "Exception caught: ", e);
+                            } catch (JSONException e) {
+                                Log.e(TAG, "Exception caught: ", e);
+                            }
+
+                        }
+                    });
+                } else { //if the network is NOT available, let the user know
+                    Toast.makeText(MainActivity.this, "Network unavailable!", Toast.LENGTH_LONG).show();
                 }
-            });
-        } else { //if the network is NOT available, let the user know
-            Toast.makeText(this, "Network unavailable!", Toast.LENGTH_LONG).show();
-        }
+            }
+        });
     }
 
+    //do I need this for refreshing?
     private void updateDisplay() {
         Log.v(TAG, "UI is running");
     }
@@ -176,11 +183,4 @@ public class MainActivity extends AppCompatActivity {
         dialog.show(getFragmentManager(), "error_dialog");
     }
 
-    @OnClick(R.id.submitButton)
-    public void startResultsActivity(View view) {
-        //write intent to start results activity when you click on the button
-        Intent intent = new Intent(this, ResultsActivity.class);
-        intent.putExtra(MOVIE_RESULTS, mMovie); //not sure about this part - add run on UI thread stuff
-        startActivity(intent);
-    }
 }

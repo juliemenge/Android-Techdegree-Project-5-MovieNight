@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.juliemenge.movienight.R;
 
 import com.juliemenge.movienight.Data.Movie;
+import com.juliemenge.movienight.UI.ResultsActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -18,7 +19,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
     private Movie[] mMovies;
 
-    public MovieAdapter(Movie[] movies) {
+    public MovieAdapter(ResultsActivity resultsActivity, Movie[] movies) {
         mMovies = movies;
     }
 

@@ -33,7 +33,7 @@ public class ResultsActivity extends AppCompatActivity {
         Parcelable[] parcelables = intent.getParcelableArrayExtra(MainActivity.MOVIE_RESULTS);
         mMovies = Arrays.copyOf(parcelables, parcelables.length, Movie[].class);
 
-        MovieAdapter adapter = new MovieAdapter(mMovies);
+        MovieAdapter adapter = new MovieAdapter(this, mMovies);
         mRecyclerView.setAdapter(adapter);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);

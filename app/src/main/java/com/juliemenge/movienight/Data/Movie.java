@@ -1,6 +1,9 @@
 package com.juliemenge.movienight.Data;
 
-public class Movie {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Movie implements Parcelable {
 
     private String mTitle; //movie title
     private double mRating; //user rating on a scale of 1-10
@@ -10,6 +13,10 @@ public class Movie {
     private String mOverview; //brief summary of the movie's plot
     private double mPopularity; //how popular the movie is
     private int mRevenue; //total revenue the movie has brought in
+
+    public Movie() {
+
+    }
 
 
     public String getTitle() {
@@ -71,6 +78,34 @@ public class Movie {
     public void setPopularity(double popularity) {
         mPopularity = popularity;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        //add in all the values we want to pass into the parcel
+        dest.writeString(mTitle);
+    }
+
+    //method to UNparcel the data
+    private Movie(Parcel in){
+        mTitle = in.readString();
+    }
+
+    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel source) {
+            return new Movie(source);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 
     //see if revenue is still available in the api
     /*

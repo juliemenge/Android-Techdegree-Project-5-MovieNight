@@ -88,11 +88,13 @@ public class Movie implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         //add in all the values we want to pass into the parcel
         dest.writeString(mTitle);
+        dest.writeString(mOverview);
     }
 
     //method to UNparcel the data
     private Movie(Parcel in){
         mTitle = in.readString();
+        mOverview = in.readString();
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {

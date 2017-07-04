@@ -1,5 +1,6 @@
 package com.juliemenge.movienight.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -7,24 +8,33 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 
 import com.juliemenge.movienight.R;
 
 import com.juliemenge.movienight.Data.Movie;
 import com.juliemenge.movienight.UI.MainActivity;
+import com.juliemenge.movienight.UI.OverviewDialogFragment;
 import com.juliemenge.movienight.UI.ResultsActivity;
+
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
+public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder>{
 
     private Movie[] mMovies;
+
+    private ResultsActivity mResultsActivity;
+
     public static final String TAG = MovieAdapter.class.getSimpleName(); //TAG for logging errors
 
     public MovieAdapter(ResultsActivity resultsActivity, Movie[] movies) {
         mMovies = movies;
+        mResultsActivity = resultsActivity;
+
     }
 
     @Override
@@ -67,12 +77,18 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         //click on a movie name in a list to display the overview
         @Override
         public void onClick(View v) {
-            String overview = mMovies[getAdapterPosition()].getOverview(); //how to get the real overview? pass in a movie, 0 isn't right
+
+
+            String overview = mMovies[getAdapterPosition()].getOverview(); //get the overview of the specific movie in the list
             Log.v(TAG, overview);
+
+            OverviewDialogFragment dialog = new OverviewDialogFragment();
+            dialog.show(mResultsActivity.getFragmentManager(), "movie_dialog");
 
         }
 
-
     }
+
+
 
 }

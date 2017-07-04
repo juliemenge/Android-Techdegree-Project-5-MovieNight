@@ -1,5 +1,6 @@
 package com.juliemenge.movienight.UI;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,7 @@ public class ResultsActivity extends AppCompatActivity {
 
     //property for array of movies when using parcelable
     private Movie[] mMovies;
+    private Context mContext;
 
     @BindView(R.id.recyclerView) RecyclerView mRecyclerView;
 

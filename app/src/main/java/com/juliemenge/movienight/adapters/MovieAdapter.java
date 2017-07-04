@@ -2,6 +2,7 @@ package com.juliemenge.movienight.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -78,11 +79,15 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         @Override
         public void onClick(View v) {
 
-
             String overview = mMovies[getAdapterPosition()].getOverview(); //get the overview of the specific movie in the list
-            Log.v(TAG, overview);
 
+            //create a bundle so the overview can be passed to the dialog fragment
+            Bundle bundle = new Bundle();
+            bundle.putString("overview", overview);
+
+            //create and display the overview dialog
             OverviewDialogFragment dialog = new OverviewDialogFragment();
+            dialog.setArguments(bundle);
             dialog.show(mResultsActivity.getFragmentManager(), "movie_dialog");
 
         }

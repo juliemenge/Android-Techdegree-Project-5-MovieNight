@@ -8,8 +8,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
 import com.juliemenge.movienight.Data.Movie;
@@ -30,7 +34,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     public static final String TAG = MainActivity.class.getSimpleName(); //TAG for logging errors
 
@@ -46,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.startDateEntry) EditText mStartDateEntry;
     @BindView(R.id.endDateEntry) EditText mEndDateEntry;
     @BindView(R.id.submitButton) Button mSubmitButton;
+    @BindView(R.id.genreSpinner) Spinner mGenreSpinner;
+    public String[] genreNames = {"", "28", "12", "16"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +59,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this); //make butterknife do its thing
+
+        //create the spinner for genres
+        ArrayAdapter genreAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, genreNames);
+        genreAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mGenreSpinner.setAdapter(genreAdapter);
+        mGenreSpinner.setOnItemSelectedListener(this);
+
 
         //when the button is clicked, do the api request and return the results in a new activity
         mSubmitButton.setOnClickListener(new View.OnClickListener() {
@@ -63,19 +76,23 @@ public class MainActivity extends AppCompatActivity {
                 String votesCount = mVotesEntry.getText().toString().trim();
                 String startDate = mStartDateEntry.getText().toString().trim();
                 String endDate = mEndDateEntry.getText().toString().trim();
+                //String genre = String.valueOf(mGenreSpinner.getSelectedItem());
+                String genre = mGenreSpinner.getSelectedItem().toString();
+
 
                 //build the api url
                 String movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + apiKey +
                         "&language=en-US&sort_by=popularity.desc&include_adult=false" +
                         "&include_video=false&page=1&vote_average.gte=" + ratingAverage +
                         "&vote_count.gte=" + votesCount + "&primary_release_date.gte=" + startDate +
-                        "&primary_release_date.lte=" + endDate;
+                        "&primary_release_date.lte=" + endDate + "&with_genres=" + genre; //add + genrevariable
 
                 //asynchronous get recipe from OkHTTP to make the API get the data
                 //first, check that the network is available
                 if(isNetworkAvailable()) {
 
                     OkHttpClient client = new OkHttpClient();
+
                     Request request = new Request.Builder()
                             .url(movieUrl)
                             .build();
@@ -136,6 +153,13 @@ public class MainActivity extends AppCompatActivity {
         Log.v(TAG, "UI is running");
     }
 
+    //GENRES
+    /* create a new genre class (name and id)
+    use genre url to return a list of all the genres
+    use that list to populate my spinner
+    if that's too crazy, just populate the spinner with genres to try it out first
+    */
+
     //method to create a movie using json data from the api
     private Movie[] getMovieResults(String jsonData) throws JSONException {
         JSONObject allData = new JSONObject(jsonData); //creating a json object to store everything possible from the api request
@@ -183,4 +207,14 @@ public class MainActivity extends AppCompatActivity {
         dialog.show(getFragmentManager(), "error_dialog");
     }
 
+    //required methods for spinner
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        parent.getItemAtPosition(position);
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
 }

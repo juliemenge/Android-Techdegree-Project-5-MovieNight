@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @BindView(R.id.endDateEntry) EditText mEndDateEntry;
     @BindView(R.id.submitButton) Button mSubmitButton;
     @BindView(R.id.genreSpinner) Spinner mGenreSpinner;
-    public String[] genreNames = {"", "28", "12", "16"};
+    public String[] genreNames = {"", "Action", "Adventure", "Animation"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,8 +76,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 String votesCount = mVotesEntry.getText().toString().trim();
                 String startDate = mStartDateEntry.getText().toString().trim();
                 String endDate = mEndDateEntry.getText().toString().trim();
-                //String genre = String.valueOf(mGenreSpinner.getSelectedItem());
-                String genre = mGenreSpinner.getSelectedItem().toString();
+
+                //set genre id based on what was selected in spinner
+                String genre;
+                switch (mGenreSpinner.getSelectedItem().toString()) {
+                    case "Action":  genre = "28";
+                        break;
+                    case "Adventure":  genre = "12";
+                        break;
+                    case "Animation":  genre = "16";
+                        break;
+
+                    default: genre= "Invalid genre";
+                        break;
+                }
 
 
                 //build the api url

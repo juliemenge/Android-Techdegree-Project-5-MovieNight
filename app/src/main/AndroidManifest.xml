@@ -21,6 +21,8 @@
         </activity>
         <activity android:name=".UI.ResultsActivity">
         </activity>
+        <activity android:name=".UI.TVResultsActivity">
+        </activity>
     </application>
 
 </manifest>

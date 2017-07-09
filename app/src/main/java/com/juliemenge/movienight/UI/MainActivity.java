@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.juliemenge.movienight.Data.Genre;
 import com.juliemenge.movienight.Data.Movie;
+import com.juliemenge.movienight.Data.TVShow;
 import com.juliemenge.movienight.R;
 
 import org.json.JSONArray;
@@ -43,10 +44,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public static final String TAG = MainActivity.class.getSimpleName(); //TAG for logging errors
 
     public static final String MOVIE_RESULTS = "MOVIE RESULTS"; //used for intent
+    public static final String TV_RESULTS = "TV RESULTS"; //used for intent
 
     String apiKey = "313b7986e3fac321ab33d6d3546ac8ab"; //my unique api key
 
     private Movie[] mMovie; //creating a variable to store movie results - call it on onResponse when response is successful
+    private TVShow[] mTVShows; //array to store tv results - call it in onResponse when response is successful
 
     //use butterknife to declare all UI variables
     @BindView(R.id.tvCheckBox) CheckBox mTVCheckBox;
@@ -163,77 +166,149 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 //check if tv show button is checked
                 if(mTVCheckBox.isChecked()) {
+                    //all the stuff to search for and return TV results
                     Toast.makeText(MainActivity.this, "Box is checked!", Toast.LENGTH_LONG).show();
-                }
 
+                    String tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=" + apiKey +
+                            "&language=en-US&sort_by=" + sortBy + "&air_date.gte=" + startDate +
+                            "&air_date.lte=" + endDate + "&vote_average.gte=" + ratingAverage +
+                            "&vote_count.gte=" + votesCount + "&with_genres=" + genre +
+                            "&include_null_first_air_dates=false";
 
-                //build the api url
-                String movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + apiKey +
-                        "&language=en-US&sort_by=" + sortBy + "100&include_adult=false" +
-                        "&include_video=false&page=1&vote_average.gte=" + ratingAverage +
-                        "&vote_count.gte=" + votesCount + "&primary_release_date.gte=" + startDate +
-                        "&primary_release_date.lte=" + endDate + "&with_genres=" + genre; //add + genrevariable
+                    //start tv search block
+                    //asynchronous get recipe from OkHTTP to make the API get the data about TV shows
+                    //first, check that the network is available
+                    if (isNetworkAvailable()) {
 
-                //asynchronous get recipe from OkHTTP to make the API get the data
-                //first, check that the network is available
-                if(isNetworkAvailable()) {
+                        OkHttpClient client = new OkHttpClient();
 
-                    OkHttpClient client = new OkHttpClient();
+                        Request request = new Request.Builder()
+                                .url(tvUrl)
+                                .build();
 
-                    Request request = new Request.Builder()
-                            .url(movieUrl)
-                            .build();
+                        Call call = client.newCall(request);
 
-                    Call call = client.newCall(request);
+                        call.enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                //what to do when there is no response
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
 
-                    call.enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                            //what to do when there is no response
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                }
-                            });
-                            alertUserAboutError(); //if no response, let the user know
-                        }
-
-                        @Override
-                        //what to do when you receive a response back
-                        public void onResponse(Call call, Response response) throws IOException {
-                            try {
-                                final String jsonData = response.body().string(); //string to store all the json data
-                                if (response.isSuccessful()) { //if you receive a response and it is successful
-                                    mMovie = getMovieResults(jsonData); //pass the json data into the method that creates the movies model
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            updateDisplay(); //need to check if i need this for refreshing?
-
-                                            //start the intent to display the new data
-                                            Intent intent = new Intent(MainActivity.this, ResultsActivity.class);
-                                            intent.putExtra(MOVIE_RESULTS, mMovie);
-                                            startActivity(intent);
-                                        }
-                                    });
-                                } else { //if you receive a response and it is NOT successful
-                                    alertUserAboutError(); //let user know there was an error
-                                }
-                            } catch (IOException e) {
-                                Log.e(TAG, "Exception caught: ", e);
-                            } catch (JSONException e) {
-                                Log.e(TAG, "Exception caught: ", e);
+                                    }
+                                });
+                                alertUserAboutError(); //if no response, let the user know
                             }
 
-                        }
-                    });
-                } else { //if the network is NOT available, let the user know
-                    Toast.makeText(MainActivity.this, "Network unavailable!", Toast.LENGTH_LONG).show();
+                            @Override
+                            //what to do when you receive a response back
+                            public void onResponse(Call call, Response response) throws IOException {
+                                try {
+                                    final String jsonData = response.body().string(); //string to store all the json data
+                                    if (response.isSuccessful()) { //if you receive a response and it is successful
+                                        mTVShows = getTVResults(jsonData); //pass the json data into the method that creates the movies model
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                updateDisplay(); //need to check if i need this for refreshing?
+                                                Log.v(TAG, "Time for TV results!");
+                                                //start the intent to display the new data
+                                                Intent intent = new Intent(MainActivity.this, TVResultsActivity.class);
+                                                intent.putExtra(TV_RESULTS, mTVShows);
+                                                startActivity(intent);
+
+                                            }
+                                        });
+                                    } else { //if you receive a response and it is NOT successful
+                                        alertUserAboutError(); //let user know there was an error
+                                    }
+                                } catch (IOException e) {
+                                    Log.e(TAG, "Exception caught: ", e);
+                                } catch (JSONException e) {
+                                    Log.e(TAG, "Exception caught: ", e);
+                                }
+
+                            }
+                        });
+                    } else { //if the network is NOT available, let the user know
+                        Toast.makeText(MainActivity.this, "Network unavailable!", Toast.LENGTH_LONG).show();
+                    }
+                    //end tv network search block
+
+                } else { //if tv box isn't checked, search for movies
+
+
+                    //build the api url
+                    String movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + apiKey +
+                            "&language=en-US&sort_by=" + sortBy + "100&include_adult=false" +
+                            "&include_video=false&page=1&vote_average.gte=" + ratingAverage +
+                            "&vote_count.gte=" + votesCount + "&primary_release_date.gte=" + startDate +
+                            "&primary_release_date.lte=" + endDate + "&with_genres=" + genre; //add + genrevariable
+
+                    //asynchronous get recipe from OkHTTP to make the API get the data about movies
+                    //first, check that the network is available
+                    if (isNetworkAvailable()) {
+
+                        OkHttpClient client = new OkHttpClient();
+
+                        Request request = new Request.Builder()
+                                .url(movieUrl)
+                                .build();
+
+                        Call call = client.newCall(request);
+
+                        call.enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                //what to do when there is no response
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                    }
+                                });
+                                alertUserAboutError(); //if no response, let the user know
+                            }
+
+                            @Override
+                            //what to do when you receive a response back
+                            public void onResponse(Call call, Response response) throws IOException {
+                                try {
+                                    final String jsonData = response.body().string(); //string to store all the json data
+                                    if (response.isSuccessful()) { //if you receive a response and it is successful
+                                        mMovie = getMovieResults(jsonData); //pass the json data into the method that creates the movies model
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                updateDisplay(); //need to check if i need this for refreshing?
+
+                                                //start the intent to display the new data
+                                                Intent intent = new Intent(MainActivity.this, ResultsActivity.class);
+                                                intent.putExtra(MOVIE_RESULTS, mMovie);
+                                                startActivity(intent);
+                                            }
+                                        });
+                                    } else { //if you receive a response and it is NOT successful
+                                        alertUserAboutError(); //let user know there was an error
+                                    }
+                                } catch (IOException e) {
+                                    Log.e(TAG, "Exception caught: ", e);
+                                } catch (JSONException e) {
+                                    Log.e(TAG, "Exception caught: ", e);
+                                }
+
+                            }
+                        });
+                    } else { //if the network is NOT available, let the user know
+                        Toast.makeText(MainActivity.this, "Network unavailable!", Toast.LENGTH_LONG).show();
+                    }
                 }
             }
         });
     }
+
+
 
     //do I need this for refreshing?
     private void updateDisplay() {
@@ -276,6 +351,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         return movies; //return the array of movies
     }
+
+    private TVShow[] getTVResults(String jsonData) throws JSONException {
+        JSONObject allData = new JSONObject(jsonData); //json object to store everything possible that api requested
+        JSONArray results = allData.getJSONArray("results"); //json object of just the stuff in the TV show results array
+
+        TVShow[] tvShows = new TVShow[results.length()]; //array of TV shows of the same length however long the array of results is from the api request
+
+        //loop through each item in the TV Show results array from the api and assign it to an element of my TV Shows array
+        for(int i=0; i<results.length(); i++) {
+            JSONObject jsonTVShow = results.getJSONObject(i); //create a new json object at proper element of the results
+            TVShow tvShow = new TVShow(); //create a new TV Show object
+
+            //set the values of the TV show
+            tvShow.setTitle(jsonTVShow.getString("original_name"));
+            tvShow.setOverview(jsonTVShow.getString("overview"));
+
+            tvShows[i] = tvShow; //set the element of the tv shows array to the object we just populated
+        }
+
+        return tvShows; //return the array of TV Shows
+    }
+
 
     //checking to see if the network is available
     private boolean isNetworkAvailable() {

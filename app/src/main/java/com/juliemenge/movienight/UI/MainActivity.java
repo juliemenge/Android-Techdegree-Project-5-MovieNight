@@ -59,11 +59,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @BindView(R.id.endDateEntry) EditText mEndDateEntry;
     @BindView(R.id.submitButton) Button mSubmitButton;
     @BindView(R.id.genreSpinner) Spinner mGenreSpinner;
-    public String[] genreNames = {"", "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", "Drama",
-                                    "Family", "Fantasy", "History", "Horror", "Music", "Mystery", "Romance", "Science Fiction",
-                                    "TV Movie", "Thriller", "War", "Western"};
+    public String[] genreNames = {"", "Action (Movies only)", "Action & Adventure (TV only)", "Adventure (Movies only)",
+                                    "Animation", "Comedy", "Crime", "Documentary", "Drama",
+                                    "Family", "Fantasy (Movies only)", "History (Movies only)", "Horror (Movies only)",
+                                    "Kids (TV only)", "Music (Movies only)", "Mystery", "News (TV only)", "Reality (TV only)",
+                                    "Romance (Movies only)", "Science Fiction (Movies only)", "Sci-Fi & Fantasy (TV only)",
+                                    "Soap (TV only)", "Talk (TV only)", "TV Movie (Movies only)", "Thriller (Movies only)",
+                                    "War (Movies only)", "War & Politics (TV only)", "Western"};
     @BindView(R.id.sortSpinner) Spinner mSortSpinner;
-    public String[] sortOptions = {"", "Popularity", "Release Date", "Revenue", "Average Vote", "Number of Votes"};
+    public String[] sortOptions = {"", "Popularity", "Release Date (Movies only)", "First Air Date (TV only)", "Revenue (Movies only)",
+                                    "Average Vote", "Number of Votes (Movies only)"};
 
 
     //private Genre[] mGenre;
@@ -105,9 +110,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 //set genre id based on what was selected in spinner
                 String genre;
                 switch (mGenreSpinner.getSelectedItem().toString()) {
-                    case "Action":  genre = "28";
+                    case "Action (Movies only)":  genre = "28";
                         break;
-                    case "Adventure":  genre = "12";
+                    case "Action & Adventure (TV only)": genre="10759";
+                        break;
+                    case "Adventure (Movies only)":  genre = "12";
                         break;
                     case "Animation":  genre = "16";
                         break;
@@ -121,25 +128,39 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         break;
                     case "Family": genre="10751";
                         break;
-                    case "Fantasy": genre="14";
+                    case "Fantasy (Movies only)": genre="14";
                         break;
                     case "History": genre="36";
                         break;
                     case "Horror": genre="27";
                         break;
+                    case "Kids": genre="10762";
+                        break;
                     case "Music": genre="10402";
                         break;
                     case "Mystery": genre="9648";
                         break;
-                    case "Romance": genre="10749";
+                    case "News (TV only)": genre="10763";
                         break;
-                    case "Science Fiction": genre="878";
+                    case "Reality (TV only)": genre="10764";
                         break;
-                    case "TV Movie": genre="10770";
+                    case "Romance (Movies only)": genre="10749";
                         break;
-                    case "Thriller": genre="53";
+                    case "Science Fiction (Movies only)": genre="878";
                         break;
-                    case "War": genre="10752";
+                    case "Sci-Fi & Fantasy (TV only)": genre="10765";
+                        break;
+                    case "Soap (TV only)": genre="10766";
+                        break;
+                    case "Talk (TV only)": genre="10767";
+                        break;
+                    case "TV Movie (Movies only)": genre="10770";
+                        break;
+                    case "Thriller (Movies only)": genre="53";
+                        break;
+                    case "War (Movies only)": genre="10752";
+                        break;
+                    case "War & Politics (TV only)": genre="10768";
                         break;
                     case "Western": genre="37";
                         break;
@@ -152,13 +173,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 switch (mSortSpinner.getSelectedItem().toString()) {
                     case "Popularity": sortBy = "popularity.desc";
                         break;
-                    case "Release Date": sortBy = "release_date.asc";
+                    case "Release Date (Movies only)": sortBy = "release_date.desc";
                         break;
-                    case "Revenue": sortBy = "revenue.asc";
+                    case "First Air Date (TV only):": sortBy = "first_air_date.desc";
                         break;
-                    case "Average Vote": sortBy = "vote_average.asc";
+                    case "Revenue (Movies only)": sortBy = "revenue.desc";
                         break;
-                    case "Number of Votes": sortBy = "vote_count.asc";
+                    case "Average Vote": sortBy = "vote_average.desc";
+                        break;
+                    case "Number of Votes (Movies only)": sortBy = "vote_count.desc";
                         break;
                     default: sortBy = ""; //do not include sort in request if none specified
                         break;
@@ -167,7 +190,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 //check if tv show button is checked
                 if(mTVCheckBox.isChecked()) {
                     //all the stuff to search for and return TV results
-                    Toast.makeText(MainActivity.this, "Box is checked!", Toast.LENGTH_LONG).show();
 
                     String tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=" + apiKey +
                             "&language=en-US&sort_by=" + sortBy + "&air_date.gte=" + startDate +

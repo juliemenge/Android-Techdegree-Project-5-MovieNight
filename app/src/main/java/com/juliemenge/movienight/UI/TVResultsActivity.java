@@ -21,8 +21,7 @@ public class TVResultsActivity extends AppCompatActivity {
     //property for array of movies when using parcelable
     private TVShow[] mTVShows;
 
-    @BindView(R.id.recyclerView)
-    RecyclerView mRecyclerView;
+    @BindView(R.id.tvRecyclerView) RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -18,7 +18,7 @@ import butterknife.ButterKnife;
 
 public class TVResultsActivity extends AppCompatActivity {
 
-    //property for array of movies when using parcelable
+    //property for array of tv shows when using parcelable
     private TVShow[] mTVShows;
 
     @BindView(R.id.tvRecyclerView) RecyclerView mRecyclerView;
@@ -31,6 +31,7 @@ public class TVResultsActivity extends AppCompatActivity {
         ButterKnife.bind(this); //make butterknife do its thing
 
         Intent intent = getIntent(); //get the intent started in main activity
+        //get the array of tv shows as parcelable to be used in recyclver view
         Parcelable[] parcelables = intent.getParcelableArrayExtra(MainActivity.TV_RESULTS);
         mTVShows = Arrays.copyOf(parcelables, parcelables.length, TVShow[].class);
 

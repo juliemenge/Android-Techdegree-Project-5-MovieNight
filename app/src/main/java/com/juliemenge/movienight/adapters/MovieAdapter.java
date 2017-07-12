@@ -35,7 +35,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     public MovieAdapter(ResultsActivity resultsActivity, Movie[] movies) {
         mMovies = movies;
         mResultsActivity = resultsActivity;
-
     }
 
     @Override

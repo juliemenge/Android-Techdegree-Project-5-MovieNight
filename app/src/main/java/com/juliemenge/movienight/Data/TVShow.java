@@ -8,10 +8,10 @@ public class TVShow implements Parcelable{
     private String mTitle; //TV show title
     private String mOverview; //TV show overview
 
+    //required empty constructor for parcelable
     public TVShow() {
 
     }
-
 
     public String getTitle() {
         return mTitle;
@@ -29,6 +29,7 @@ public class TVShow implements Parcelable{
         mOverview = overview;
     }
 
+    //required methods for parcelable
     @Override
     public int describeContents() {
         return 0;

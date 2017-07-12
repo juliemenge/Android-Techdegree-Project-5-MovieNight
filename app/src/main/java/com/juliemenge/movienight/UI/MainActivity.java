@@ -14,10 +14,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
-import com.juliemenge.movienight.Data.Genre;
 import com.juliemenge.movienight.Data.Movie;
 import com.juliemenge.movienight.Data.TVShow;
 import com.juliemenge.movienight.R;
@@ -27,12 +25,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -43,12 +38,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public static final String TAG = MainActivity.class.getSimpleName(); //TAG for logging errors
 
-    public static final String MOVIE_RESULTS = "MOVIE RESULTS"; //used for intent
-    public static final String TV_RESULTS = "TV RESULTS"; //used for intent
+    public static final String MOVIE_RESULTS = "MOVIE RESULTS"; //used for intent to display movies
+    public static final String TV_RESULTS = "TV RESULTS"; //used for intent to display tv shows
 
-    String apiKey = "313b7986e3fac321ab33d6d3546ac8ab"; //my unique api key
+    String apiKey = "313b7986e3fac321ab33d6d3546ac8ab"; //my unique tmdb api key
 
-    private Movie[] mMovie; //creating a variable to store movie results - call it on onResponse when response is successful
+    private Movie[] mMovie; //array to store movie results - call it on onResponse when response is successful
     private TVShow[] mTVShows; //array to store tv results - call it in onResponse when response is successful
 
     //use butterknife to declare all UI variables
@@ -58,7 +53,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @BindView(R.id.startDateEntry) EditText mStartDateEntry;
     @BindView(R.id.endDateEntry) EditText mEndDateEntry;
     @BindView(R.id.submitButton) Button mSubmitButton;
-    @BindView(R.id.genreSpinner) Spinner mGenreSpinner;
+    @BindView(R.id.genreSpinner) Spinner mGenreSpinner; //genre drop down
+    //genre options
     public String[] genreNames = {"", "Action (Movies only)", "Action & Adventure (TV only)", "Adventure (Movies only)",
                                     "Animation", "Comedy", "Crime", "Documentary", "Drama",
                                     "Family", "Fantasy (Movies only)", "History (Movies only)", "Horror (Movies only)",
@@ -66,13 +62,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                     "Romance (Movies only)", "Science Fiction (Movies only)", "Sci-Fi & Fantasy (TV only)",
                                     "Soap (TV only)", "Talk (TV only)", "TV Movie (Movies only)", "Thriller (Movies only)",
                                     "War (Movies only)", "War & Politics (TV only)", "Western"};
-    @BindView(R.id.sortSpinner) Spinner mSortSpinner;
+    @BindView(R.id.sortSpinner) Spinner mSortSpinner; //sort by drop down
+    //sort by options
     public String[] sortOptions = {"", "Popularity", "Release Date (Movies only)", "First Air Date (TV only)", "Revenue (Movies only)",
                                     "Average Vote", "Number of Votes (Movies only)"};
-
-
-    //private Genre[] mGenre;
-    //private List<Genre> genreList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,27 +74,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         ButterKnife.bind(this); //make butterknife do its thing
 
-        //populateGenres(); //make request to get list of genres
-
         //create the spinner for genres
         ArrayAdapter genreAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, genreNames);
         genreAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mGenreSpinner.setAdapter(genreAdapter);
         mGenreSpinner.setOnItemSelectedListener(this);
 
-        //create the spinner for sort options
+        //create the spinner for sort by options
         final ArrayAdapter sortAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, sortOptions);
         sortAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSortSpinner.setAdapter(sortAdapter);
         mSortSpinner.setOnItemSelectedListener(this);
 
-
-
-        //when the button is clicked, do the api request and return the results in a new activity
+        //when the submit button is clicked, submit the api request and display results in a new activity
         mSubmitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //set what the user entered to variables used to build the api url
+                //set what the user entered to variables and use them to build the api url
                 String ratingAverage = mRatingEntry.getText().toString().trim();
                 String votesCount = mVotesEntry.getText().toString().trim();
                 String startDate = mStartDateEntry.getText().toString().trim();
@@ -168,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         break;
                 }
 
-                //set sort variable based on what was selected
+                //set sort by id based on what was selected in spinner
                 String sortBy;
                 switch (mSortSpinner.getSelectedItem().toString()) {
                     case "Popularity": sortBy = "popularity.desc";
@@ -187,17 +176,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         break;
                 }
 
-                //check if tv show button is checked
+                //check if tv show button is checked - if so, display tv results only
                 if(mTVCheckBox.isChecked()) {
-                    //all the stuff to search for and return TV results
-
+                    //tv show discover url
                     String tvUrl = "https://api.themoviedb.org/3/discover/tv?api_key=" + apiKey +
                             "&language=en-US&sort_by=" + sortBy + "&air_date.gte=" + startDate +
                             "&air_date.lte=" + endDate + "&vote_average.gte=" + ratingAverage +
                             "&vote_count.gte=" + votesCount + "&with_genres=" + genre +
                             "&include_null_first_air_dates=false";
 
-                    //start tv search block
                     //asynchronous get recipe from OkHTTP to make the API get the data about TV shows
                     //first, check that the network is available
                     if (isNetworkAvailable()) {
@@ -229,13 +216,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                 try {
                                     final String jsonData = response.body().string(); //string to store all the json data
                                     if (response.isSuccessful()) { //if you receive a response and it is successful
-                                        mTVShows = getTVResults(jsonData); //pass the json data into the method that creates the movies model
+                                        mTVShows = getTVResults(jsonData); //pass the json data into the method that creates the tv show model
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                updateDisplay(); //need to check if i need this for refreshing?
-                                                Log.v(TAG, "Time for TV results!");
-                                                //start the intent to display the new data
+                                                //start the intent to display the tv show results
                                                 Intent intent = new Intent(MainActivity.this, TVResultsActivity.class);
                                                 intent.putExtra(TV_RESULTS, mTVShows);
                                                 startActivity(intent);
@@ -256,17 +241,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     } else { //if the network is NOT available, let the user know
                         Toast.makeText(MainActivity.this, "Network unavailable!", Toast.LENGTH_LONG).show();
                     }
-                    //end tv network search block
 
-                } else { //if tv box isn't checked, search for movies
+                } else { //if tv box isn't checked, search for movies only
 
 
-                    //build the api url
+                    //build the api url for movies
                     String movieUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + apiKey +
                             "&language=en-US&sort_by=" + sortBy + "100&include_adult=false" +
                             "&include_video=false&page=1&vote_average.gte=" + ratingAverage +
                             "&vote_count.gte=" + votesCount + "&primary_release_date.gte=" + startDate +
-                            "&primary_release_date.lte=" + endDate + "&with_genres=" + genre; //add + genrevariable
+                            "&primary_release_date.lte=" + endDate + "&with_genres=" + genre;
 
                     //asynchronous get recipe from OkHTTP to make the API get the data about movies
                     //first, check that the network is available
@@ -303,8 +287,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                updateDisplay(); //need to check if i need this for refreshing?
-
                                                 //start the intent to display the new data
                                                 Intent intent = new Intent(MainActivity.this, ResultsActivity.class);
                                                 intent.putExtra(MOVIE_RESULTS, mMovie);
@@ -330,42 +312,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-
-
-    //do I need this for refreshing?
-    private void updateDisplay() {
-        Log.v(TAG, "UI is running");
-    }
-
-    //GENRES
-    /* create a new genre class (name and id)
-    use genre url to return a list of all the genres
-    use that list to populate my spinner
-    if that's too crazy, just populate the spinner with genres to try it out first
-    */
-
-    //method to create a movie using json data from the api
+    //create a movie using json data from the api
     private Movie[] getMovieResults(String jsonData) throws JSONException {
-        JSONObject allData = new JSONObject(jsonData); //creating a json object to store everything possible from the api request
+        JSONObject allData = new JSONObject(jsonData); //json object to store everything possible from the api request
 
-        //create a new json object of just the array of movie results
+        //new json object of just the array of movie results
         JSONArray results = allData.getJSONArray("results");
 
-        Movie[] movies = new Movie[results.length()]; //create an array of movies of the same length of however long the array of results is from the api request
+        Movie[] movies = new Movie[results.length()]; //array of movies of the same length of however long the array of results is from the api request
 
         //loop through each item in the results array and assign it to an element of the movies array
         for(int i=0; i<results.length(); i++) {
-            JSONObject jsonMovie = results.getJSONObject(i); //create a new json object at proper element of results
+            JSONObject jsonMovie = results.getJSONObject(i); //new json object at proper element of results
             Movie movie = new Movie(); //create a new movie object
 
             //set the values of a movie
             movie.setTitle(jsonMovie.getString("title"));
-            //movie.setGenre(jsonMovie.getJSONArray("genres"));
             movie.setOverview(jsonMovie.getString("overview"));
             movie.setPopularity(jsonMovie.getDouble("popularity"));
             movie.setRating(jsonMovie.getDouble("vote_average"));
             movie.setReleaseDate(jsonMovie.getString("release_date"));
-            //movie.setRevenue(jsonMovie.getInt("revenue"));
             movie.setVoteCount(jsonMovie.getInt("vote_count"));
 
             movies[i] = movie; //set the element of the movies array to the object we just populated
@@ -374,6 +340,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return movies; //return the array of movies
     }
 
+    //create a tv show using json data from the api
     private TVShow[] getTVResults(String jsonData) throws JSONException {
         JSONObject allData = new JSONObject(jsonData); //json object to store everything possible that api requested
         JSONArray results = allData.getJSONArray("results"); //json object of just the stuff in the TV show results array
@@ -412,93 +379,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         AlertDialogFragment dialog = new AlertDialogFragment();
         dialog.show(getFragmentManager(), "error_dialog");
     }
-
-    /*
-    //get current available genres from tmdb api
-    public void populateGenres() {
-        String genreUrl = "https://api.themoviedb.org/3/genre/movie/list?api_key=313b7986e3fac321ab33d6d3546ac8ab&language=en-US";
-
-        if(isNetworkAvailable()) {
-
-            OkHttpClient client = new OkHttpClient();
-
-            Request request = new Request.Builder()
-                    .url(genreUrl)
-                    .build();
-
-            Call call = client.newCall(request);
-
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    //what to do when there is no response
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                        }
-                    });
-                    alertUserAboutError(); //if no response, let the user know
-                }
-
-                @Override
-                //what to do when you receive a response back
-                public void onResponse(Call call, Response response) throws IOException {
-                    try {
-                        final String jsonData = response.body().string(); //string to store all the json data
-                        if (response.isSuccessful()) { //if you receive a response and it is successful
-                            mGenre = getGenreResults(jsonData); //pass the json data into the method that creates the movies model
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updateDisplay(); //need to check if i need this for refreshing?
-
-                                }
-                            });
-                        } else { //if you receive a response and it is NOT successful
-                            alertUserAboutError(); //let user know there was an error
-                        }
-                    } catch (IOException e) {
-                        Log.e(TAG, "Exception caught: ", e);
-                    } catch (JSONException e) {
-                        Log.e(TAG, "Exception caught: ", e);
-                    }
-
-                }
-            });
-        } else { //if the network is NOT available, let the user know
-            Toast.makeText(MainActivity.this, "Network unavailable!", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private Genre[] getGenreResults(String jsonData) throws JSONException {
-        genreList = new ArrayList<>();
-
-        JSONObject allData = new JSONObject(jsonData); //creating a json object to store everything possible from the api request
-
-        //create a new json object of just the array of genre results
-        JSONArray results = allData.getJSONArray("genres");
-
-        Genre[] genres = new Genre[results.length()]; //create an array of genres of the same length of however long the array of results is from the api request
-
-        //loop through each item in the results array and assign it to an element of the movies array
-        for(int i=0; i<results.length(); i++) {
-            JSONObject jsonGenre = results.getJSONObject(i); //create a new json object at proper element of results
-            Genre genre = new Genre(); //create a new genre object
-
-            //set the values of a genre
-            genre.setId(jsonGenre.getInt("id"));
-            genre.setName(jsonGenre.getString("name"));
-
-            genreList.add(genre);
-
-
-            genres[i] = genre; //set the element of the genres array to the object we just populated
-        }
-
-        return genres; //return the array of genres
-    }
-    */
 
     //required methods for spinner
     @Override

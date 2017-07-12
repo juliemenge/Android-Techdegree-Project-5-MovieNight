@@ -8,7 +8,7 @@ import android.os.Bundle;
 
 public class OverviewDialogFragment extends DialogFragment {
 
-    //dialog fragment to display the movie's overview
+    //dialog fragment to display a movie or tv show overview
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Context context = getActivity();
@@ -19,9 +19,9 @@ public class OverviewDialogFragment extends DialogFragment {
 
         //create the dialog fragment
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
-                .setTitle("Overview of the movie")
+                .setTitle("Overview") //displayed at the top of the dialog box
                 .setMessage(overview) //overview of the movie is in the actual dialog box
-                .setPositiveButton("OK", null);
+                .setPositiveButton("OK", null); //pressing ok just closes the box
 
         AlertDialog dialog = builder.create();
         return dialog;

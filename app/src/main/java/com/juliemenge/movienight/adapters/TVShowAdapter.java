@@ -71,7 +71,7 @@ public class TVShowAdapter extends RecyclerView.Adapter<TVShowAdapter.TVViewHold
         @Override
         public void onClick(View v) {
 
-            String overview = mTVShows[getAdapterPosition()].getOverview(); //get the overview of the specific movie in the list
+            String overview = mTVShows[getAdapterPosition()].getOverview(); //get the overview of the specific tv show in the list
 
             //create a bundle so the overview can be passed to the dialog fragment
             Bundle bundle = new Bundle();

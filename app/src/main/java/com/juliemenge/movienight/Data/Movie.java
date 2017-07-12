@@ -9,11 +9,10 @@ public class Movie implements Parcelable {
     private double mRating; //user rating on a scale of 1-10
     private int mVoteCount; //number of votes the movies has received
     private String mReleaseDate; //date the movie was released
-    private int[] mGenres; //array of ids representing movie's genres
     private String mOverview; //brief summary of the movie's plot
     private double mPopularity; //how popular the movie is
-    private int mRevenue; //total revenue the movie has brought in
 
+    //required empty constructor for parcelable
     public Movie() {
 
     }
@@ -51,18 +50,6 @@ public class Movie implements Parcelable {
         mReleaseDate = releaseDate;
     }
 
-    /*
-    //figure out genre ids
-    public int[] getGenre() {
-        return mGenres;
-    }
-
-    public void setGenre(int[] genres) {
-        mGenres = genres;
-    }
-    */
-
-
     public String getOverview() {
         return mOverview;
     }
@@ -79,6 +66,7 @@ public class Movie implements Parcelable {
         mPopularity = popularity;
     }
 
+    //required methods for parcelable
     @Override
     public int describeContents() {
         return 0;
@@ -108,16 +96,5 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
-
-    //see if revenue is still available in the api
-    /*
-    public int getRevenue() {
-        return mRevenue;
-    }
-
-    public void setRevenue(int revenue) {
-        mRevenue = revenue;
-    }
-    */
 
 }

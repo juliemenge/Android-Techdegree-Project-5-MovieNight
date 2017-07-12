@@ -1,6 +1,5 @@
 package com.juliemenge.movienight.UI;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
@@ -21,7 +20,6 @@ public class ResultsActivity extends AppCompatActivity {
 
     //property for array of movies when using parcelable
     private Movie[] mMovies;
-    private Context mContext;
 
     @BindView(R.id.recyclerView) RecyclerView mRecyclerView;
 
@@ -32,6 +30,7 @@ public class ResultsActivity extends AppCompatActivity {
         ButterKnife.bind(this); //make butterknife do its thing
 
         Intent intent = getIntent(); //get the intent started in main activity
+        //get the movie results and make the parcelable for the recyclver view
         Parcelable[] parcelables = intent.getParcelableArrayExtra(MainActivity.MOVIE_RESULTS);
         mMovies = Arrays.copyOf(parcelables, parcelables.length, Movie[].class);
 
